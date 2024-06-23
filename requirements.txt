@@ -4,4 +4,4 @@ datetime
 opencv-python
 joblib
 numpy
-opencv-python-headless
+cv2
