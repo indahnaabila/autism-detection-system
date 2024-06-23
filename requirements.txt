@@ -3,6 +3,5 @@ pandas
 datetime
 opencv-python
 joblib
-SVMneeds
 numpy
 opencv-python-headless
