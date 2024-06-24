@@ -21,7 +21,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["Personal Information", "Screening", "ASD Test
 with tab1:
     st.write("Enter your personal information here.")
 
-    filename_consent = Path('1. output consent.xlsx')
+    filename_consent = str(Path('1. output consent.xlsx'))
 
     with st.form(key='consent_form'):
         st.write("Personal Information:")
@@ -91,7 +91,7 @@ with tab1:
         #st.success('Form data saved to Excel successfully!')
 
 with tab2:
-    filename_scq = Path('2. output scq.xlsx')
+    filename_scq = str(Path('2. output scq.xlsx'))
 
     questions = [
         "1. Apakah dia sekarang bisa berbicara menggunakan frasa atau kalimat pendek? Jika tidak, lanjutkan ke Pertanyaan 8",
@@ -209,7 +209,7 @@ with tab3:
     st.title("Video Feature Extraction")
     video_file = st.file_uploader("Upload a video", type=["mp4", "avi"])
     sheet_name = st.text_input("Enter the sheet name for the Excel output", "VideoAnalysis")
-    output_file = Path('3. output calculation.xlsx')
+    output_file = str(Path('3. output calculation.xlsx'))
     fps_value = st.number_input("Enter the FPS value for processing", min_value=1, value=1)
 
     if video_file is not None:
@@ -308,7 +308,7 @@ with tab3:
             # Display the first few rows of the DataFrame and its information
             video_analysis_data.head(), video_analysis_data.info()
             # Load the SVM model
-            svm_model_loaded = load(Path('svm_model_rbf_fix.joblib'))
+            svm_model_loaded = load(str(Path('svm_model_rbf_fix.joblib')))
 
             video_analysis_data = video_analysis_data.drop(columns=['Unnamed: 0'])
 
