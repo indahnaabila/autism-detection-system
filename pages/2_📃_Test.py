@@ -234,6 +234,11 @@ with tab3:
                             break
         
                         if frame_count % frames_to_skip == 0:
+                            if len(frame.shape) == 2:  # Grayscale frame
+                                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+                            elif frame.shape[2] == 4:  # RGBA frame
+                                frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
+        
                             preprocessor = ImagePreprocessor(frame)
                             preprocessor.read_and_resize()
                             resize_image = preprocessor.resized_image
