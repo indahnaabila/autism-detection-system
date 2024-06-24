@@ -54,18 +54,6 @@ class ImagePreprocessor:
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         plt.show()
 
-def shape_to_np(dlib_shape, dtype="int"):
-    """Converts dlib shape object to numpy array"""
-    # Initialize the list of (x,y) coordinates
-    coordinates = np.zeros((dlib_shape.num_parts, 2), dtype=dtype)
-
-    # Loop over all facial landmarks and convert them to a tuple with (x,y) coordinates:
-    for i in range(0, dlib_shape.num_parts):
-        coordinates[i] = (dlib_shape.part(i).x, dlib_shape.part(i).y)
-
-    # Return the list of (x,y) coordinates:
-    return coordinates
-
 class LandmarkExtractor:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
@@ -90,9 +78,8 @@ class LandmarkExtractor:
                 return None
 
             for face in faces:
-                shape = self.predictor(gray, face)
-                landmarks = shape_to_np(shape)
-                return landmarks
+                landmarks = self.predictor(image=gray, box=face)
+                return np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(68)])
         except Exception as e:
             st.error(f"Error in extract_landmarks: {e}")
         return None
