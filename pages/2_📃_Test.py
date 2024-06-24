@@ -1,6 +1,5 @@
 
 import streamlit as st
-#from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoTransformerBase
 import pandas as pd
 from datetime import datetime
 import cv2
@@ -307,7 +306,7 @@ with tab3:
             # Display the first few rows of the DataFrame and its information
             video_analysis_data.head(), video_analysis_data.info()
             # Load the SVM model
-            svm_model_loaded = load(r"E:\0_Indah Nabila\8th Sem\Streamlit Tugas Akhir\svm_model_rbf_fix.joblib")
+            svm_model_loaded = load("svm_model_rbf_fix.joblib")
 
             video_analysis_data = video_analysis_data.drop(columns=['Unnamed: 0'])
 
