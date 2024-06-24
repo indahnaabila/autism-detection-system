@@ -232,12 +232,17 @@ with tab3:
                         ret, frame = cap.read()
                         if not ret:
                             break
-                        
+                            
                         if len(frame.shape) == 2:  # Grayscale frame
                             frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
                         elif frame.shape[2] == 4:  # RGBA frame
                             frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
-        
+                        elif frame.shape[2] == 3:  # Already RGB frame
+                            pass
+                        else:
+                            st.error(f"Frame {frame_count} has an unsupported number of channels: {frame.shape[2]}")
+                            continue
+
                         if frame_count % frames_to_skip == 0:
                             preprocessor = ImagePreprocessor(frame)
                             preprocessor.read_and_resize()
