@@ -13,13 +13,33 @@ class ImagePreprocessor:
         self.image = image
         self.resized_image = None
         self.rotated_image = None
-    
+
     def read_and_resize(self, scale_percent=100):
-        width = int(self.image.shape[1] * scale_percent / 100)
-        height = int(self.image.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        self.resized_image = cv2.resize(self.image, dim)
-    
+        try:
+            if len(self.image.shape) == 2:  # Grayscale
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_GRAY2RGB)
+            elif self.image.shape[2] == 4:  # RGBA
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_RGBA2RGB)
+            elif self.image.shape[2] != 3:
+                raise ValueError(f"Unsupported image shape: {self.image.shape}")
+
+            # Log original image properties
+            print(f"Original image shape: {self.image.shape}, dtype: {self.image.dtype}")
+
+            width = int(self.image.shape[1] * scale_percent / 100)
+            height = int(self.image.shape[0] * scale_percent / 100)
+            dim = (width, height)
+            self.resized_image = cv2.resize(self.image, dim)
+
+            # Log resized image properties
+            print(f"Resized image shape: {self.resized_image.shape}, dtype: {self.resized_image.dtype}")
+
+            if self.resized_image.dtype != 'uint8':
+                self.resized_image = self.resized_image.astype('uint8')
+        except Exception as e:
+            print(f"Error in read_and_resize: {e}")
+            raise e
+
     def rotate(self, clockwise):
         if self.resized_image is None:
             print("Image needs to be resized first.")
@@ -28,12 +48,11 @@ class ImagePreprocessor:
             self.rotated_image = cv2.rotate(self.resized_image, cv2.ROTATE_90_CLOCKWISE)
         else:
             self.rotated_image = cv2.rotate(self.resized_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    
+
     def show_image(self, image):
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        #plt.axis('off')
         plt.show()
-
+        
 class LandmarkExtractor:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
