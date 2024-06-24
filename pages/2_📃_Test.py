@@ -240,6 +240,7 @@ with tab3:
                         # Log frame properties
                         st.write(f"Processing frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
 
+                        # Ensure the frame is in the correct format
                         if len(frame.shape) == 2:  # Grayscale frame
                             frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
                         elif frame.shape[2] == 4:  # RGBA frame
@@ -247,6 +248,14 @@ with tab3:
                         elif frame.shape[2] != 3:
                             st.error(f"Frame {frame_count} has an unsupported number of channels: {frame.shape[2]}")
                             continue
+
+                        try:
+                            # Try explicitly converting to ensure correct format
+                            frame = frame.astype('uint8')
+                        except Exception as e:
+                            st.error(f"Error converting frame {frame_count} to uint8: {e}")
+                            continue
+
 
                         if frame_count % frames_to_skip == 0:
                             preprocessor = ImagePreprocessor(frame)
