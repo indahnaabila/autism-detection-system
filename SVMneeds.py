@@ -6,6 +6,7 @@ import scipy.ndimage as ndi
 import pandas as pd
 from matplotlib import pyplot as plt
 from openpyxl import load_workbook
+from pathlib import Path
 
 class ImagePreprocessor:
     def __init__(self, image):
@@ -36,7 +37,7 @@ class ImagePreprocessor:
 class LandmarkExtractor:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(shape_predictor_68_face_landmarks.dat)
+        self.predictor = dlib.shape_predictor(Path('shape_predictor_68_face_landmarks.dat'))
     
     def extract_landmarks(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
