@@ -5,4 +5,4 @@ opencv-python
 joblib
 numpy
 opencv-python-headless
-dlib
+dlib-bin
