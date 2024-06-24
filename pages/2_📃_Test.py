@@ -232,14 +232,19 @@ with tab3:
                         ret, frame = cap.read()
                         if not ret:
                             break
-                            
+
+                        if frame is None:
+                            st.error(f"Frame {frame_count} is None.")
+                            continue
+
+                        # Log frame properties
+                        st.write(f"Processing frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
+
                         if len(frame.shape) == 2:  # Grayscale frame
                             frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
                         elif frame.shape[2] == 4:  # RGBA frame
                             frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
-                        elif frame.shape[2] == 3:  # Already RGB frame
-                            pass
-                        else:
+                        elif frame.shape[2] != 3:
                             st.error(f"Frame {frame_count} has an unsupported number of channels: {frame.shape[2]}")
                             continue
 
@@ -252,14 +257,14 @@ with tab3:
                             landmarks = extractor.extract_landmarks(resize_image)
 
                             if landmarks is None:
-                                print(f"No landmarks detected in {frame_count}.")
+                                st.warning(f"No landmarks detected in frame {frame_count}.")
                                 continue
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
 
                             if corrected_landmarks is None:
-                                print(f"No landmarks detected after correction in {frame_count}.")
+                                st.warning(f"No landmarks detected after correction in frame {frame_count}.")
                                 continue
 
                             kalkulasi_fitur = FeatureCalculator()
