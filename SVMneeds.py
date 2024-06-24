@@ -61,15 +61,20 @@ class LandmarkExtractor:
     
     def extract_landmarks(self, image):
         try:
+            # Convert to grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             st.write(f"Grayscale image shape: {gray.shape}, dtype: {gray.dtype}")
-            
+
+            # Ensure the image is uint8
+            if gray.dtype != 'uint8':
+                gray = gray.astype('uint8')
+                st.write(f"Converted grayscale image dtype to uint8")
+
+            # Detect faces
             faces = self.detector(gray)
             st.write(f"Number of faces detected: {len(faces)}")
 
-            if len(faces) == 0:
-                return None
-
+            # Extract landmarks
             for face in faces:
                 landmarks = self.predictor(image=gray, box=face)
                 return np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(68)])
