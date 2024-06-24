@@ -271,6 +271,7 @@ with tab3:
                                 continue
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
+                            corrected_image = corrected_image.astype('uint8')
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
                             st.write(f"Corecting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
