@@ -205,6 +205,21 @@ with tab2:
 
             st.success('SCQ data saved to Excel successfully!')
 
+def ensure_rgb(image):
+    """Ensure the image is in RGB format."""
+    try:
+        if len(image.shape) == 2:  # Grayscale
+            return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[2] == 4:  # RGBA
+            return cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        elif image.shape[2] == 3:  # RGB
+            return image
+        else:
+            raise ValueError(f"Unsupported image shape: {image.shape}")
+    except Exception as e:
+        st.error(f"Error ensuring RGB format: {e}")
+        return None
+
 with tab3:
     st.title("Video Feature Extraction")
     video_file = st.file_uploader("Upload a video", type=["mp4", "avi"])
@@ -241,20 +256,20 @@ with tab3:
                         st.write(f"Processing frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
 
                         # Ensure the frame is in the correct format
-                        if len(frame.shape) == 2:  # Grayscale frame
-                            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
-                        elif frame.shape[2] == 4:  # RGBA frame
-                            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
-                        elif frame.shape[2] != 3:
-                            st.error(f"Frame {frame_count} has an unsupported number of channels: {frame.shape[2]}")
+                        frame = ensure_rgb(frame)
+                        if frame is None:
+                            st.error(f"Frame {frame_count} could not be converted to RGB.")
                             continue
+
+                        # Log frame properties after conversion
+                        st.write(f"Converted frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
+
                         try:
-                            # Try explicitly converting to ensure correct format
+                            # Explicitly convert to uint8 if needed
                             frame = frame.astype('uint8')
                         except Exception as e:
                             st.error(f"Error converting frame {frame_count} to uint8: {e}")
                             continue
-
 
                         if frame_count % frames_to_skip == 0:
                             preprocessor = ImagePreprocessor(frame)
@@ -271,21 +286,19 @@ with tab3:
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
                             # Ensure the corrected_image is in the correct format
-                            if len(corrected_image.shape) == 2:  # Grayscale frame
-                                corrected_image = cv2.cvtColor(corrected_image, cv2.COLOR_GRAY2RGB)
-                            elif corrected_image.shape[2] == 4:  # RGBA frame
-                                corrected_image = cv2.cvtColor(corrected_image, cv2.COLOR_RGBA2RGB)
-                            elif corrected_image.shape[2] != 3:
-                                st.error(f"corrected_image {frame_count} has an unsupported number of channels: {corrected_image.shape[2]}")
+                            corrected_image = ensure_rgb(corrected_image)
+                            if corrected_image is None:
+                                st.error(f"corrected_image {frame_count} could not be converted to RGB.")
                                 continue
+
                             try:
-                                # Try explicitly converting to ensure correct format
+                                # Explicitly convert to uint8 if needed
                                 corrected_image = corrected_image.astype('uint8')
                             except Exception as e:
                                 st.error(f"Error converting corrected_image {frame_count} to uint8: {e}")
                                 continue
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
-                            st.write(f"Corecting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
+                            st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
                             if corrected_landmarks is None:
                                 st.warning(f"No landmarks detected after correction in frame {frame_count}.")
