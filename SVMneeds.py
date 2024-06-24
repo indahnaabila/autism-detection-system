@@ -11,6 +11,12 @@ from pathlib import Path
 class ImagePreprocessor:
     def __init__(self, image):
         self.image = image
+        if image.dtype != 'uint8':
+            image = image.astype('uint8')
+        if len(image.shape) == 2:  # Grayscale image
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[2] == 4:  # RGBA image
+            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
         self.resized_image = None
         self.rotated_image = None
     
