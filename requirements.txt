@@ -4,5 +4,5 @@ datetime
 opencv-python
 joblib
 numpy
-opencv-python-headless
-
+libgl1 libglib2.0-0
+opencv-contrib-python-headless
