@@ -209,16 +209,32 @@ def ensure_rgb(image):
     """Ensure the image is in RGB format."""
     try:
         if len(image.shape) == 2:  # Grayscale
-            return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
         elif image.shape[2] == 4:  # RGBA
-            return cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
-        elif image.shape[2] == 3:  # RGB
-            return image
-        else:
+            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        elif image.shape[2] != 3:
             raise ValueError(f"Unsupported image shape: {image.shape}")
+        return image
     except Exception as e:
         st.error(f"Error ensuring RGB format: {e}")
         return None
+
+def verify_image(image, stage):
+    try:
+        st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
+        if len(image.shape) == 2 or image.shape[2] == 1:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[2] == 4:
+            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        elif image.shape[2] != 3:
+            raise ValueError(f"Unsupported image shape at {stage}: {image.shape}")
+        if image.dtype != 'uint8':
+            image = image.astype('uint8')
+        return image
+    except Exception as e:
+        st.error(f"Error verifying image at {stage}: {e}")
+        return None
+
 
 with tab3:
     st.title("Video Feature Extraction")
@@ -252,30 +268,12 @@ with tab3:
                             st.error(f"Frame {frame_count} is None.")
                             continue
 
-                        # Log frame properties
-                        st.write(f"Processing frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
-
-                        # Ensure the frame is in the correct format
-                        frame = ensure_rgb(frame)
-                        if frame is None:
-                            st.error(f"Frame {frame_count} could not be converted to RGB.")
-                            continue
-
-                        # Log frame properties after conversion
-                        st.write(f"Converted frame {frame_count}, shape: {frame.shape}, dtype: {frame.dtype}")
-
-                        try:
-                            # Explicitly convert to uint8 if needed
-                            frame = frame.astype('uint8')
-                        except Exception as e:
-                            st.error(f"Error converting frame {frame_count} to uint8: {e}")
-                            continue
+                        frame = verify_image(frame, "initial")
 
                         if frame_count % frames_to_skip == 0:
                             preprocessor = ImagePreprocessor(frame)
                             preprocessor.read_and_resize()
-                            resize_image = preprocessor.resized_image
-                            st.write(f"Resizing frame {frame_count}, shape: {resize_image.shape}, dtype: {resize_image.dtype}")
+                            resize_image = verify_image(preprocessor.resized_image, "resized")
 
                             extractor = LandmarkExtractor()
                             landmarks = extractor.extract_landmarks(resize_image)
@@ -285,18 +283,8 @@ with tab3:
                                 continue
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
-                            # Ensure the corrected_image is in the correct format
-                            corrected_image = ensure_rgb(corrected_image)
-                            if corrected_image is None:
-                                st.error(f"corrected_image {frame_count} could not be converted to RGB.")
-                                continue
+                            corrected_image = verify_image(corrected_image, "corrected")
 
-                            try:
-                                # Explicitly convert to uint8 if needed
-                                corrected_image = corrected_image.astype('uint8')
-                            except Exception as e:
-                                st.error(f"Error converting corrected_image {frame_count} to uint8: {e}")
-                                continue
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
                             st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
