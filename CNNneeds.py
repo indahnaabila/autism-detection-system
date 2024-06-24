@@ -10,6 +10,7 @@ from PIL import Image
 import dlib
 import matplotlib.pyplot as plt
 import scipy.ndimage as ndi
+from pathlib import Path
 
 # Function to extract frames
 def extract_frames(video_path, output_folder, desired_fps):
@@ -70,7 +71,7 @@ class ImagePreprocessor:
 class LandmarkExtractor:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(shape_predictor_68_face_landmarks.dat)
+        self.predictor = dlib.shape_predictor(Path('shape_predictor_68_face_landmarks.dat'))
     
     def extract_landmarks(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -234,7 +235,7 @@ best_params = {'kernel_size': 4, 'filters': 32, 'dropout_rate': 0.32066245874503
 model = ImprovedCNN(best_params['kernel_size'], best_params['filters'], best_params['dropout_rate'])
 
 # Load the model state using the custom name with map_location to CPU
-custom_model_name = "CNN_N4_100w.pth"
+custom_model_name = Path('CNN_N4_100w.pth')
 model.load_state_dict(torch.load(custom_model_name, map_location=torch.device('cpu')))
 
 # Move the model to the appropriate device
