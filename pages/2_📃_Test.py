@@ -308,7 +308,7 @@ with tab3:
             # Display the first few rows of the DataFrame and its information
             video_analysis_data.head(), video_analysis_data.info()
             # Load the SVM model
-            svm_model_loaded = load(Path('svm_model_rbf_fix.joblib')
+            svm_model_loaded = load(Path('svm_model_rbf_fix.joblib'))
 
             video_analysis_data = video_analysis_data.drop(columns=['Unnamed: 0'])
 
