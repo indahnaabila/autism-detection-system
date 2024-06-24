@@ -241,6 +241,7 @@ class ImageSlopeCorrector:
         kemiringan = FeatureCalculator.Rumus1('sudut',landmarks[0,0],landmarks[16,0],landmarks[0,1],landmarks[16,1])
         print('Dirotasi sebesar: '+ str(kemiringan) +str(' derajat'))
         fixed_image = ndi.rotate(image, angle=-kemiringan, reshape=False)
+        fixed_image = fixed_image.astype('uint8')
         return fixed_image
 
     @staticmethod
