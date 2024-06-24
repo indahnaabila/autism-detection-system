@@ -9,3 +9,4 @@ dlib-bin
 scikit-learn
 matplotlib
 openpyxl
+torch
