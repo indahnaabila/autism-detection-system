@@ -6,3 +6,4 @@ joblib
 numpy
 opencv-python-headless
 dlib-bin
+scikit-learn
