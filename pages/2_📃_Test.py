@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -205,35 +204,17 @@ with tab2:
 
             st.success('SCQ data saved to Excel successfully!')
 
-def ensure_rgb(image):
-    """Ensure the image is in RGB format."""
-    try:
-        if len(image.shape) == 2:  # Grayscale
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        elif image.shape[2] == 4:  # RGBA
-            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
-        elif image.shape[2] != 3:
-            raise ValueError(f"Unsupported image shape: {image.shape}")
-        return image
-    except Exception as e:
-        st.error(f"Error ensuring RGB format: {e}")
-        return None
-
 def verify_image(image, stage):
-    try:
-        st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
-        if len(image.shape) == 2 or image.shape[2] == 1:
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        elif image.shape[2] == 4:
-            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
-        elif image.shape[2] != 3:
-            raise ValueError(f"Unsupported image shape at {stage}: {image.shape}")
-        if image.dtype != 'uint8':
-            image = image.astype('uint8')
-        return image
-    except Exception as e:
-        st.error(f"Error verifying image at {stage}: {e}")
-        return None
+    st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
+    if len(image.shape) == 2 or image.shape[2] == 1:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    elif image.shape[2] == 4:
+        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+    elif image.shape[2] != 3:
+        raise ValueError(f"Unsupported image shape at {stage}: {image.shape}")
+    if image.dtype != 'uint8':
+        image = image.astype('uint8')
+    return image
 
 
 with tab3:
@@ -246,88 +227,80 @@ with tab3:
     if video_file is not None:
         if st.button("Process Video"):
             with st.spinner('Processing...'):
-                try:
-                    with tempfile.NamedTemporaryFile(delete=False) as tfile:
-                        tfile.write(video_file.read())
-                        temp_filename = tfile.name
+                with tempfile.NamedTemporaryFile(delete=False) as tfile:
+                    tfile.write(video_file.read())
+                    temp_filename = tfile.name
 
-                    cap = cv2.VideoCapture(temp_filename)
-                    data_persistence = DataPersistence(output_file)
-                    all_features = []
+                cap = cv2.VideoCapture(temp_filename)
+                data_persistence = DataPersistence(output_file)
+                all_features = []
 
-                    original_fps = cap.get(cv2.CAP_PROP_FPS)
-                    frames_to_skip = int(original_fps / fps_value)  # Adjusting to the user-defined FPS
+                original_fps = cap.get(cv2.CAP_PROP_FPS)
+                frames_to_skip = int(original_fps / fps_value)  # Adjusting to the user-defined FPS
 
-                    frame_count = 0
-                    while cap.isOpened():
-                        ret, frame = cap.read()
-                        if not ret:
-                            break
+                frame_count = 0
+                while cap.isOpened():
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
 
-                        if frame is None:
-                            st.error(f"Frame {frame_count} is None.")
+                    if frame is None:
+                        st.error(f"Frame {frame_count} is None.")
+                        continue
+
+                    frame = verify_image(frame, "initial")
+
+                    if frame_count % frames_to_skip == 0:
+                        preprocessor = ImagePreprocessor(frame)
+                        preprocessor.read_and_resize()
+                        resize_image = verify_image(preprocessor.resized_image, "resized")
+
+                        extractor = LandmarkExtractor()
+                        landmarks = extractor.extract_landmarks(resize_image)
+
+                        if landmarks is None:
+                            st.warning(f"No landmarks detected in frame {frame_count}.")
                             continue
 
-                        frame = verify_image(frame, "initial")
+                        corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
+                        corrected_image = verify_image(corrected_image, "corrected")
 
-                        if frame_count % frames_to_skip == 0:
-                            preprocessor = ImagePreprocessor(frame)
-                            preprocessor.read_and_resize()
-                            resize_image = verify_image(preprocessor.resized_image, "resized")
+                        corrected_landmarks = extractor.extract_landmarks(corrected_image)
+                        st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
-                            extractor = LandmarkExtractor()
-                            landmarks = extractor.extract_landmarks(resize_image)
+                        if corrected_landmarks is None:
+                            st.warning(f"No landmarks detected after correction in frame {frame_count}.")
+                            continue
 
-                            if landmarks is None:
-                                st.warning(f"No landmarks detected in frame {frame_count}.")
-                                continue
+                        kalkulasi_fitur = FeatureCalculator()
+                        features = kalkulasi_fitur.rumus29(corrected_landmarks)
+                        all_features.append(features)
 
-                            corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
-                            corrected_image = verify_image(corrected_image, "corrected")
+                    frame_count += 1
 
-                            corrected_landmarks = extractor.extract_landmarks(corrected_image)
-                            st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
+                cap.release()
 
-                            if corrected_landmarks is None:
-                                st.warning(f"No landmarks detected after correction in frame {frame_count}.")
-                                continue
+                if os.path.isfile(temp_filename):
+                    os.unlink(temp_filename)
 
-                            kalkulasi_fitur = FeatureCalculator()
-                            features = kalkulasi_fitur.rumus29(corrected_landmarks)
-                            all_features.append(features)
+                new_column_names = {
+                    '0': 'F0.1', '1': 'F1.1', '2': 'F2.1', '3': 'F3.1', '4': 'F4.1',
+                    '5': 'F5.1', '6': 'F6.1', '7': 'F7.1', '8': 'F10.1', '9': 'F3.2',
+                    '10': 'F8.2', '11': 'F9.2', '12': 'F11.2', '13': 'F15.2', '14': 'F27.2',
+                    '15': 'F1.3', '16': 'F3.3', '17': 'F8.3', '18': 'F9.3', '19': 'F10.3',
+                    '20': 'F15.3', '21': 'F18.3', '22': 'F21.3', '23': 'F23.3', '24': 'F28.3'
+                }
 
-                        frame_count += 1
-
-                    cap.release()
-
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
-                finally:
-                    if os.path.isfile(temp_filename):
-                        os.unlink(temp_filename)
-
-                    new_column_names = {
-                        '0': 'F0.1', '1': 'F1.1', '2': 'F2.1', '3': 'F3.1', '4': 'F4.1',
-                        '5': 'F5.1', '6': 'F6.1', '7': 'F7.1', '8': 'F10.1', '9': 'F3.2',
-                        '10': 'F8.2', '11': 'F9.2', '12': 'F11.2', '13': 'F15.2', '14': 'F27.2',
-                        '15': 'F1.3', '16': 'F3.3', '17': 'F8.3', '18': 'F9.3', '19': 'F10.3',
-                        '20': 'F15.3', '21': 'F18.3', '22': 'F21.3', '23': 'F23.3', '24': 'F28.3'
-                    }
-
-                    if not all_features:  # No features were extracted
-                        st.error("No features extracted.")
+                if not all_features:  # No features were extracted
+                    st.error("No features extracted.")
+                else:
+                    features_df = pd.DataFrame(all_features)
+                    features_df.rename(columns=new_column_names, inplace=True)
+                    if not features_df.empty:
+                        data_persistence.save_to_excel(features_df, sheet_name=sheet_name)
+                        st.success("Features extracted and saved to Excel.")
                     else:
-                        try:
-                            features_df = pd.DataFrame(all_features)
-                            features_df.rename(columns=new_column_names, inplace=True)
-                            # If DataFrame is not empty, save to Excel and show success
-                            if not features_df.empty:
-                                data_persistence.save_to_excel(features_df, sheet_name=sheet_name)
-                                st.success("Features extracted and saved to Excel.")
-                            else:
-                                st.error("No features extracted.")
-                        except Exception as e:
-                            st.error(f"An error occurred: {e}")
+                        st.error("No features extracted.")
 
                 st.success("Done!")
                 st.write("Features extracted and saved to Excel.")
