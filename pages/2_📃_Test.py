@@ -248,7 +248,6 @@ with tab3:
                         elif frame.shape[2] != 3:
                             st.error(f"Frame {frame_count} has an unsupported number of channels: {frame.shape[2]}")
                             continue
-
                         try:
                             # Try explicitly converting to ensure correct format
                             frame = frame.astype('uint8')
@@ -271,7 +270,20 @@ with tab3:
                                 continue
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
-                            corrected_image = corrected_image.astype('uint8')
+                            # Ensure the corrected_image is in the correct format
+                            if len(corrected_image.shape) == 2:  # Grayscale frame
+                                corrected_image = cv2.cvtColor(corrected_image, cv2.COLOR_GRAY2RGB)
+                            elif corrected_image.shape[2] == 4:  # RGBA frame
+                                corrected_image = cv2.cvtColor(corrected_image, cv2.COLOR_RGBA2RGB)
+                            elif corrected_image.shape[2] != 3:
+                                st.error(f"corrected_image {frame_count} has an unsupported number of channels: {corrected_image.shape[2]}")
+                                continue
+                            try:
+                                # Try explicitly converting to ensure correct format
+                                corrected_image = corrected_image.astype('uint8')
+                            except Exception as e:
+                                st.error(f"Error converting corrected_image {frame_count} to uint8: {e}")
+                                continue
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
                             st.write(f"Corecting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
