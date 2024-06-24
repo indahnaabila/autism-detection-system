@@ -10,9 +10,20 @@ from pathlib import Path
 
 class ImagePreprocessor:
     def __init__(self, image):
-        self.image = image
+        self.image = self.ensure_uint8_rgb(image)
         self.resized_image = None
         self.rotated_image = None
+    
+    def ensure_uint8_rgb(self, image):
+        # Convert image to uint8 if it's not already
+        if image.dtype != 'uint8':
+            image = image.astype('uint8')
+        # Convert to RGB if necessary
+        if len(image.shape) == 2:  # Grayscale image
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[2] == 4:  # RGBA image
+            image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        return image
     
     def read_and_resize(self, scale_percent=100):
         width = int(self.image.shape[1] * scale_percent / 100)
@@ -31,17 +42,27 @@ class ImagePreprocessor:
     
     def show_image(self, image):
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        #plt.axis('off')
+        plt.axis('off')
         plt.show()
 
 class LandmarkExtractor:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        #self.predictor = dlib.shape_predictor(str(Path('shape_predictor_68_face_landmarks.dat')))
         self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
     
+    def ensure_uint8_gray(self, image):
+        # Convert image to uint8 if it's not already
+        if image.dtype != 'uint8':
+            image = image.astype('uint8')
+        # Convert to grayscale if necessary
+        if len(image.shape) == 3 and image.shape[2] == 3:  # RGB image
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        elif len(image.shape) == 3 and image.shape[2] == 4:  # RGBA image
+            image = cv2.cvtColor(image, cv2.COLOR_RGBA2GRAY)
+        return image
+    
     def extract_landmarks(self, image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = self.ensure_uint8_gray(image)
         faces = self.detector(gray)
         for face in faces:
             landmarks = self.predictor(image=gray, box=face)
@@ -52,11 +73,12 @@ class LandmarkExtractor:
         if landmarks is None:
             print("No landmarks to visualize.")
             return
-        plt.figure(figsize=(8,8))
+        plt.figure(figsize=(8, 8))
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         plt.scatter(landmarks[:, 0], landmarks[:, 1], s=20, marker='.', c='c')
-        #plt.axis('off')
+        plt.axis('off')
         plt.show()
+
 
 class FeatureCalculator:
     
