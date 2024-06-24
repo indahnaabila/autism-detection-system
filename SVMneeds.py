@@ -74,6 +74,13 @@ class LandmarkExtractor:
             faces = self.detector(gray)
             st.write(f"Number of faces detected: {len(faces)}")
 
+            # Detect faces
+            faces = self.detector(gray)
+            st.write(f"Number of faces detected: {len(faces)}")
+
+            if len(faces) == 0:
+                return None
+
             # Extract landmarks
             for face in faces:
                 landmarks = self.predictor(image=gray, box=face)
