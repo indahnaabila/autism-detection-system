@@ -67,6 +67,9 @@ class LandmarkExtractor:
             faces = self.detector(gray)
             st.write(f"Number of faces detected: {len(faces)}")
 
+            if len(faces) == 0:
+                return None
+
             for face in faces:
                 landmarks = self.predictor(image=gray, box=face)
                 return np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(68)])
