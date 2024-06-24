@@ -272,6 +272,7 @@ with tab3:
 
                             corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
                             corrected_landmarks = extractor.extract_landmarks(corrected_image)
+                            st.write(f"Corecting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
                             if corrected_landmarks is None:
                                 st.warning(f"No landmarks detected after correction in frame {frame_count}.")
