@@ -233,6 +233,13 @@ with tab3:
                         if not ret:
                             break
 
+                        if image.dtype != 'uint8':
+                            image = image.astype('uint8')
+                        if len(frame.shape) == 2:  # Grayscale frame
+                            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+                        elif frame.shape[2] == 4:  # RGBA frame
+                            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
+        
                         if frame_count % frames_to_skip == 0:
                             preprocessor = ImagePreprocessor(frame)
                             preprocessor.read_and_resize()
