@@ -261,6 +261,7 @@ with tab3:
                             preprocessor = ImagePreprocessor(frame)
                             preprocessor.read_and_resize()
                             resize_image = preprocessor.resized_image
+                            st.write(f"Resizing frame {frame_count}, shape: {resize_image.shape}, dtype: {resize_image.dtype}")
 
                             extractor = LandmarkExtractor()
                             landmarks = extractor.extract_landmarks(resize_image)
