@@ -205,7 +205,7 @@ with tab2:
             st.success('SCQ data saved to Excel successfully!')
 
 def verify_image(image, stage):
-    st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
+    #st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
     if len(image.shape) == 2 or image.shape[2] == 1:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     elif image.shape[2] == 4:
