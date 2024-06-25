@@ -259,17 +259,17 @@ with tab3:
                         landmarks = extractor.extract_landmarks(resize_image)
 
                         if landmarks is None:
-                            st.warning(f"No landmarks detected in frame {frame_count}.")
+                            #st.warning(f"No landmarks detected in frame {frame_count}.")
                             continue
 
                         corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
                         corrected_image = verify_image(corrected_image, "corrected")
 
                         corrected_landmarks = extractor.extract_landmarks(corrected_image)
-                        st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
+                        #st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
                         if corrected_landmarks is None:
-                            st.warning(f"No landmarks detected after correction in frame {frame_count}.")
+                            #st.warning(f"No landmarks detected after correction in frame {frame_count}.")
                             continue
 
                         kalkulasi_fitur = FeatureCalculator()
