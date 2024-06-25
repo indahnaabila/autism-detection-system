@@ -156,7 +156,7 @@ with tab2:
         return score
 
     # Create the form in Streamlit
-    st.title("Social Communication Questionnaire (SCQ)")
+    st.subheader("Social Communication Questionnaire (SCQ)")
 
     with st.form("scq_form"):
         st.markdown("Instruksi: Silakan jawab setiap pertanyaan dengan YA atau TIDAK. Pastikan Anda memikirkan jawaban Anda berdasarkan pengamatan Anda selama tiga bulan terakhir.")
