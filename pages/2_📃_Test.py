@@ -345,7 +345,7 @@ if 'landmarks_extraction_folder' not in st.session_state:
 # Streamlit interface within tab4
 with tab4:
     
-    st.header("Video Upload and Frame Extraction")
+    st.subheader("Video Upload and Frame Extraction")
     video_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"])
     folder_name = st.text_input("Enter the name of the output folder for frames", "extracted_frames")
     fps = st.number_input("Frames per second (FPS)", min_value=1, value=1)
@@ -364,7 +364,7 @@ with tab4:
 
 
     # Image processing and landmark extraction
-    st.header("Image Processing and Landmark Extraction")
+    st.subheader("Image Processing and Landmark Extraction")
     if st.session_state['frame_extraction_folder']:
         st.write(f"Using frame extraction folder: {st.session_state['frame_extraction_folder']}")
         if 'landmarks_folder_name' not in st.session_state:
@@ -379,7 +379,7 @@ with tab4:
         st.warning("Please extract frames from a video first.")
 
     # Prediction and analysis
-    st.header("Prediction and Analysis")
+    st.subheader("Prediction and Analysis")
     if st.session_state['landmarks_extraction_folder']:
         st.write(f"Using landmarks extraction folder: {st.session_state['landmarks_extraction_folder']}")
         if 'prediction_folder_name' not in st.session_state:
