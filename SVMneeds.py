@@ -25,7 +25,7 @@ class ImagePreprocessor:
                 raise ValueError(f"Unsupported image shape: {self.image.shape}")
 
             # Log original image properties
-            print(f"Original image shape: {self.image.shape}, dtype: {self.image.dtype}")
+            #print(f"Original image shape: {self.image.shape}, dtype: {self.image.dtype}")
 
             width = int(self.image.shape[1] * scale_percent / 100)
             height = int(self.image.shape[0] * scale_percent / 100)
@@ -33,7 +33,7 @@ class ImagePreprocessor:
             self.resized_image = cv2.resize(self.image, dim)
 
             # Log resized image properties
-            print(f"Resized image shape: {self.resized_image.shape}, dtype: {self.resized_image.dtype}")
+            #print(f"Resized image shape: {self.resized_image.shape}, dtype: {self.resized_image.dtype}")
 
             if self.resized_image.dtype != 'uint8':
                 self.resized_image = self.resized_image.astype('uint8')
