@@ -13,7 +13,7 @@ Welcome to the Autism Detection System, an advanced tool designed to help detect
 
 tab1, tab2, tab3 = st.tabs(["My Research", "About Me", "FAQ"])
 with tab1:
-    st.header("My Research")
+    #st.header("My Research")
     st.write("""
     Here, you can find detailed information about our study and methodology in developing the autism detection system.
     """)
@@ -70,7 +70,7 @@ with tab1:
     # """)
 
 with tab2:
-    st.header("About Me")
+    #st.header("About Me")
     st.write("""
     Hello! I'm Indah, the creator of this autism detection system. With a background in AI and healthcare, I am dedicated to developing innovative solutions for early autism detection.
     """)
@@ -92,7 +92,7 @@ with tab2:
 
 
 with tab3:
-    st.header("Frequently Asked Questions")
+    #st.header("Frequently Asked Questions")
     
     st.subheader("What is this system?")
     st.write("""
