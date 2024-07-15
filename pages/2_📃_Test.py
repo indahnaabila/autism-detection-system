@@ -212,7 +212,7 @@ with tab3:
     st.markdown("1. Positioning")
     st.markdown("Position yourself or your child seated on a chair in front of a table with a screen that will display the external stimulus.")
     st.markdown("2. Prepare the External Stimulus")
-    st.markdown("Prepare the external stimulus from this video [insert link](#) or you can use another video that is joyful and surprising.")
+    st.markdown("Prepare the external stimulus from this video [https://www.youtube.com/watch?v=mu-YLZpB6is&t=2s](#), and this [https://www.youtube.com/watch?v=z5GQ6ov71E4](#) or you can use another video that is joyful and surprising.")
     st.markdown("3. Record Emotional Response")
     st.markdown("Record the emotional response of yourself or your child for approximately 5 minutes. Once done, save the recording and upload it below.")
     
@@ -349,7 +349,7 @@ with tab4:
     st.markdown("1. Positioning")
     st.markdown("Position yourself or your child seated on a chair in front of a table with a screen that will display the external stimulus.")
     st.markdown("2. Prepare the External Stimulus")
-    st.markdown("Prepare the external stimulus from this video [insert link](#) or you can use another video that is joyful and surprising.")
+    st.markdown("Prepare the external stimulus from this video [https://www.youtube.com/watch?v=mu-YLZpB6is&t=2s](#), and this [https://www.youtube.com/watch?v=z5GQ6ov71E4](#) or you can use another video that is joyful and surprising.")
     st.markdown("3. Record Emotional Response")
     st.markdown("Record the emotional response of yourself or your child for approximately 5 minutes. Once done, save the recording and upload it below.")
 
