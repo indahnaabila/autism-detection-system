@@ -1,6 +1,5 @@
 
 import streamlit as st
-#from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoTransformerBase
 import pandas as pd
 from datetime import datetime
 import cv2
@@ -12,6 +11,7 @@ import os
 from pathlib import Path
 from CNNneeds import extract_frames, process_images_in_folder, predict_folder, analyze_data_np
 import os
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 st.title("ASD Test")
@@ -19,9 +19,7 @@ st.title("ASD Test")
 tab1, tab2, tab3, tab4 = st.tabs(["Personal Information", "Screening", "ASD Test 1 - SVM", "ASD Test 2 - CNN"])
 with tab1:
     st.write("Enter your personal information here.")
-
-    filename_consent = r"E:\0_Indah Nabila\8th Sem\Streamlit Tugas Akhir\1. output consent.xlsx"
-
+    filename_consent = str(Path('1. output consent.xlsx'))
     with st.form(key='consent_form'):
         st.write("Personal Information:")
         name = st.text_input("Name:")
@@ -90,8 +88,7 @@ with tab1:
         #st.success('Form data saved to Excel successfully!')
 
 with tab2:
-    filename_scq = r"E:\0_Indah Nabila\8th Sem\Streamlit Tugas Akhir\2. output scq.xlsx"
-
+    filename_scq = str(Path('2. output scq.xlsx'))
     questions = [
         "1. Can they now speak using phrases or short sentences? If not, proceed to Question 8.",
         "2. Do you have back-and-forth conversations with them that involve taking turns or building on what you have said?",
@@ -158,8 +155,7 @@ with tab2:
     st.title("Social Communication Questionnaire (SCQ)")
 
     with st.form("scq_form"):
-        st.markdown("Instruksi: Silakan jawab setiap pertanyaan dengan YA atau TIDAK. Pastikan Anda memikirkan jawaban Anda berdasarkan pengamatan Anda selama tiga bulan terakhir.")
-    
+        st.markdown("Instructions: Please answer each question with YES or NO. Make sure you think about your answers based on your observations over the past three months.")
         responses = []
         for i, question_text in enumerate(questions):
             st.write(f"Pertanyaan {i+1}")
@@ -202,6 +198,18 @@ with tab2:
             updated_df.to_excel(filename_scq, index=False)
 
             st.success('SCQ data saved to Excel successfully!')
+            
+def verify_image(image, stage):
+    #st.write(f"{stage} image shape: {image.shape}, dtype: {image.dtype}")
+    if len(image.shape) == 2 or image.shape[2] == 1:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    elif image.shape[2] == 4:
+        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+    elif image.shape[2] != 3:
+        raise ValueError(f"Unsupported image shape at {stage}: {image.shape}")
+    if image.dtype != 'uint8':
+        image = image.astype('uint8')
+    return image
 
 with tab3:
     st.header("Support Vector Machine (SVM) Method")
@@ -219,85 +227,86 @@ with tab3:
     st.subheader("Video Upload and Frame Extraction")
     video_file = st.file_uploader("Upload a video", type=["mp4", "avi"])
     sheet_name = st.text_input("Enter the sheet name for the Excel output", "VideoAnalysis")
-    output_file = r"E:\0_Indah Nabila\8th Sem\Streamlit Tugas Akhir\3. output calculation.xlsx"
+    output_file = str(Path('3. output calculation.xlsx'))
     fps_value = st.number_input("Enter the FPS value for processing", min_value=1, value=1)
 
     if video_file is not None:
         if st.button("Process Video"):
             with st.spinner('Processing...'):
-                try:
-                    with tempfile.NamedTemporaryFile(delete=False) as tfile:
-                        tfile.write(video_file.read())
-                        temp_filename = tfile.name
+                with tempfile.NamedTemporaryFile(delete=False) as tfile:
+                    tfile.write(video_file.read())
+                    temp_filename = tfile.name
 
-                    cap = cv2.VideoCapture(temp_filename)
-                    data_persistence = DataPersistence(output_file)
-                    all_features = []
+                cap = cv2.VideoCapture(temp_filename)
+                data_persistence = DataPersistence(output_file)
+                all_features = []
 
-                    original_fps = cap.get(cv2.CAP_PROP_FPS)
-                    frames_to_skip = int(original_fps / fps_value)  # Adjusting to the user-defined FPS
+                original_fps = cap.get(cv2.CAP_PROP_FPS)
+                frames_to_skip = int(original_fps / fps_value)  # Adjusting to the user-defined FPS
 
-                    frame_count = 0
-                    while cap.isOpened():
-                        ret, frame = cap.read()
-                        if not ret:
-                            break
+                frame_count = 0
+                while cap.isOpened():
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
 
-                        if frame_count % frames_to_skip == 0:
-                            preprocessor = ImagePreprocessor(frame)
-                            preprocessor.read_and_resize()
-                            resize_image = preprocessor.resized_image
+                    if frame is None:
+                        st.error(f"Frame {frame_count} is None.")
+                        continue
 
-                            extractor = LandmarkExtractor()
-                            landmarks = extractor.extract_landmarks(resize_image)
+                    frame = verify_image(frame, "initial")
 
-                            if landmarks is None:
-                                print(f"No landmarks detected in {frame_count}.")
-                                continue
+                    if frame_count % frames_to_skip == 0:
+                        preprocessor = ImagePreprocessor(frame)
+                        preprocessor.read_and_resize()
+                        resize_image = verify_image(preprocessor.resized_image, "resized")
 
-                            corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
-                            corrected_landmarks = extractor.extract_landmarks(corrected_image)
+                        extractor = LandmarkExtractor()
+                        landmarks = extractor.extract_landmarks(resize_image)
 
-                            if corrected_landmarks is None:
-                                print(f"No landmarks detected after correction in {frame_count}.")
-                                continue
+                        if landmarks is None:
+                            #st.warning(f"No landmarks detected in frame {frame_count}.")
+                            continue
 
-                            kalkulasi_fitur = FeatureCalculator()
-                            features = kalkulasi_fitur.rumus29(corrected_landmarks)
-                            all_features.append(features)
+                        corrected_image = ImageSlopeCorrector.rotate_image_based_on_landmarks(resize_image, landmarks)
+                        corrected_image = verify_image(corrected_image, "corrected")
 
-                        frame_count += 1
+                        corrected_landmarks = extractor.extract_landmarks(corrected_image)
+                        #st.write(f"Correcting frame {frame_count}, shape: {corrected_image.shape}, dtype: {corrected_image.dtype}")
 
-                    cap.release()
+                        if corrected_landmarks is None:
+                            #st.warning(f"No landmarks detected after correction in frame {frame_count}.")
+                            continue
 
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
-                finally:
-                    if os.path.isfile(temp_filename):
-                        os.unlink(temp_filename)
+                        kalkulasi_fitur = FeatureCalculator()
+                        features = kalkulasi_fitur.rumus29(corrected_landmarks)
+                        all_features.append(features)
 
-                    new_column_names = {
-                        '0': 'F0.1', '1': 'F1.1', '2': 'F2.1', '3': 'F3.1', '4': 'F4.1',
-                        '5': 'F5.1', '6': 'F6.1', '7': 'F7.1', '8': 'F10.1', '9': 'F3.2',
-                        '10': 'F8.2', '11': 'F9.2', '12': 'F11.2', '13': 'F15.2', '14': 'F27.2',
-                        '15': 'F1.3', '16': 'F3.3', '17': 'F8.3', '18': 'F9.3', '19': 'F10.3',
-                        '20': 'F15.3', '21': 'F18.3', '22': 'F21.3', '23': 'F23.3', '24': 'F28.3'
-                    }
+                    frame_count += 1
 
-                    if not all_features:  # No features were extracted
-                        st.error("No features extracted.")
+                cap.release()
+
+                if os.path.isfile(temp_filename):
+                    os.unlink(temp_filename)
+
+                new_column_names = {
+                    '0': 'F0.1', '1': 'F1.1', '2': 'F2.1', '3': 'F3.1', '4': 'F4.1',
+                    '5': 'F5.1', '6': 'F6.1', '7': 'F7.1', '8': 'F10.1', '9': 'F3.2',
+                    '10': 'F8.2', '11': 'F9.2', '12': 'F11.2', '13': 'F15.2', '14': 'F27.2',
+                    '15': 'F1.3', '16': 'F3.3', '17': 'F8.3', '18': 'F9.3', '19': 'F10.3',
+                    '20': 'F15.3', '21': 'F18.3', '22': 'F21.3', '23': 'F23.3', '24': 'F28.3'
+                }
+
+                if not all_features:  # No features were extracted
+                    st.error("No features extracted.")
+                else:
+                    features_df = pd.DataFrame(all_features)
+                    features_df.rename(columns=new_column_names, inplace=True)
+                    if not features_df.empty:
+                        data_persistence.save_to_excel(features_df, sheet_name=sheet_name)
+                        st.success("Features extracted and saved to Excel.")
                     else:
-                        try:
-                            features_df = pd.DataFrame(all_features)
-                            features_df.rename(columns=new_column_names, inplace=True)
-                            # If DataFrame is not empty, save to Excel and show success
-                            if not features_df.empty:
-                                data_persistence.save_to_excel(features_df, sheet_name=sheet_name)
-                                st.success("Features extracted and saved to Excel.")
-                            else:
-                                st.error("No features extracted.")
-                        except Exception as e:
-                            st.error(f"An error occurred: {e}")
+                        st.error("No features extracted.")
 
                 st.success("Done!")
                 st.write("Features extracted and saved to Excel.")
@@ -318,7 +327,7 @@ with tab3:
             # Display the first few rows of the DataFrame and its information
             video_analysis_data.head(), video_analysis_data.info()
             # Load the SVM model
-            svm_model_loaded = load(r"E:\0_Indah Nabila\8th Sem\Streamlit Tugas Akhir\svm_model_rbf_fix.joblib")
+            svm_model_loaded = load(str(Path('svm_model_rbf_fix.joblib')))
 
             video_analysis_data = video_analysis_data.drop(columns=['Unnamed: 0'])
 
