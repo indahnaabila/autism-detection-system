@@ -215,11 +215,12 @@ with tab3:
     st.markdown("""
     As explained on the Homepage, there are two classification methods that can be used on this website: SVM and CNN. This tab will use the SVM method, which has an accuracy of 92.5%, precision of 93.4%, recall of 92.5%, and an F1 score of 92.4%. However, before performing ASD classification, there are a few things to consider when recording emotional responses.
     """)
+    url = "https://www.streamlit.io"
     st.subheader("Guide for Setting Up Video Recording")
     st.markdown("1. Positioning")
     st.markdown("Position yourself or your child seated on a chair in front of a table with a screen that will display the external stimulus.")
     st.markdown("2. Prepare the External Stimulus")
-    st.write("Prepare the external stimulus from this video(https://www.youtube.com/watch?v=mu-YLZpB6is&t=2s), and this(https://www.youtube.com/watch?v=z5GQ6ov71E4) or you can use another video that is joyful and surprising.")
+    st.markdown("Prepare the external stimulus from this [video](https://www.youtube.com/watch?v=mu-YLZpB6is&t=2s), and [this](https://www.youtube.com/watch?v=z5GQ6ov71E4) or you can use another video that is joyful and surprising.")
     st.markdown("3. Record Emotional Response")
     st.markdown("Record the emotional response of yourself or your child for approximately 5 minutes. Once done, save the recording and upload it below.")
     
