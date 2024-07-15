@@ -157,7 +157,7 @@ with tab2:
         st.markdown("Instructions: Please answer each question with YES or NO. Make sure you think about your answers based on your observations over the past three months.")
         responses = []
         for i, question_text in enumerate(questions):
-            st.write(f"Pertanyaan {i+1}")
+            st.write(f"Question {i+1}")
             response = st.radio(
                 label=question_text, 
                 options=["Yes", "No"], 
